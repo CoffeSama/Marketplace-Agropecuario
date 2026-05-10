@@ -3,46 +3,29 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class RoleSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $roles = [
-            [
-                'nombre' => 'admin',
-                'descripcion' => 'Administrador con control total del sistema',
-            ],
-            [
-                'nombre' => 'vendedor',
-                'descripcion' => 'Vendedor que puede publicar productos',
-            ],
-            [
-                'nombre' => 'cliente',
-                'descripcion' => 'Cliente que puede ver productos y solicitar ser vendedor',
-            ],
+            ['nombre' => 'admin',         'descripcion' => 'Administrador con control total del sistema'],
+            ['nombre' => 'productor',     'descripcion' => 'Productor que publica productos agropecuarios'],
+            ['nombre' => 'comprador',     'descripcion' => 'Comprador que adquiere productos en el marketplace'],
+            ['nombre' => 'transportista', 'descripcion' => 'Transportista que ofrece servicios de logística'],
         ];
 
-        foreach ($roles as $role) {
-            Role::updateOrCreate(
-                ['nombre' => $role['nombre']],
-                $role
-            );
+        foreach ($roles as $rol) {
+            Role::updateOrCreate(['nombre' => $rol['nombre']], $rol);
         }
 
-        $this->command->info('✅ Roles creados exitosamente!');
-
-        $clienteRole = Role::where('nombre', 'cliente')->first();
-        if ($clienteRole) {
-            DB::table('users')
-                ->whereNull('role_id')
-                ->update(['role_id' => $clienteRole->id]);
-            $this->command->info('✅ Usuarios sin rol asignado ahora tienen rol cliente por defecto!');
+        $compradorRole = Role::where('nombre', 'comprador')->first();
+        if ($compradorRole) {
+            User::whereNull('role_id')->update(['role_id' => $compradorRole->id]);
         }
+
+        $this->command->info('✅ Roles creados: admin, productor, comprador, transportista');
     }
 }

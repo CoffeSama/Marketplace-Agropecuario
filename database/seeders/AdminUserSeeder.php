@@ -25,10 +25,11 @@ class AdminUserSeeder extends Seeder
 
         if (!$adminExists) {
             User::create([
-                'name' => 'Administrador',
-                'email' => 'admin@agrovida.com',
+                'name'    => 'Administrador',
+                'email'   => 'admin@agrovida.com',
                 'password' => Hash::make('admin123'),
                 'role_id' => $adminRole->id,
+                'estado'  => 'verificado',
             ]);
 
             $this->command->info('✅ Usuario administrador creado exitosamente!');
