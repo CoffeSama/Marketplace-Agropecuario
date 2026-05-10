@@ -24,10 +24,9 @@ class SolicitudVendedorController extends Controller
 
         $user = Auth::user();
 
-        // Verificar si ya es vendedor o admin
-        if ($user->isVendedor() || $user->isAdmin()) {
+        if ($user->isAdmin()) {
             return redirect()->route('home')
-                ->with('info', 'Ya tienes permisos de vendedor. No necesitas enviar una solicitud.');
+                ->with('info', 'Ya tienes permisos de administrador.');
         }
 
         // Verificar si el usuario ya tiene una solicitud pendiente
@@ -47,18 +46,10 @@ class SolicitudVendedorController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar si ya tiene una solicitud pendiente
         $solicitudPendiente = $user->solicitudPendiente();
         if ($solicitudPendiente) {
-            return redirect()->route('solicitar-vendedor')
+            return redirect()->route('verificacion.create')
                 ->with('error', 'Ya tienes una solicitud pendiente. No puedes enviar otra hasta que sea procesada.')
-                ->withInput();
-        }
-
-        // Verificar si el usuario ya es vendedor o admin
-        if ($user->isVendedor() || $user->isAdmin()) {
-            return redirect()->route('solicitar-vendedor')
-                ->with('info', 'Ya tienes permisos de vendedor. No necesitas enviar una solicitud.')
                 ->withInput();
         }
 
@@ -80,10 +71,10 @@ class SolicitudVendedorController extends Controller
         try {
             SolicitudVendedor::create($data);
 
-            return redirect()->route('solicitar-vendedor')
+            return redirect()->route('verificacion.create')
                 ->with('success', 'Tu solicitud ha sido enviada correctamente. El administrador la revisará pronto.');
         } catch (\Exception $e) {
-            return redirect()->route('solicitar-vendedor')
+            return redirect()->route('verificacion.create')
                 ->with('error', 'Hubo un error al guardar tu solicitud. Por favor, intenta nuevamente.')
                 ->withInput();
         }
@@ -126,34 +117,48 @@ class SolicitudVendedorController extends Controller
 
             // Validar que no esté ya aprobada o rechazada
             if ($solicitud->estado !== 'pendiente') {
-                return redirect()->route('admin.solicitudes-vendedor.index')
+                return redirect()->route('admin.solicitudes.index')
                     ->with('error', 'Esta solicitud ya ha sido procesada.');
             }
 
-            // Cambiar estado
             $solicitud->estado = 'aprobada';
-            $solicitud->save();
-
-            // Cambiar rol del usuario a vendedor
-            $user = $solicitud->user;
-            if ($user) {
-                $vendedorRole = Role::where('nombre', 'vendedor')->first();
-                if ($vendedorRole) {
-                    $user->role_id = $vendedorRole->id;
-                    $user->save();
-                }
-            }
-
-            // Registrar fecha de revisión
             $solicitud->fecha_revision_admin = now();
             $solicitud->save();
 
-            return redirect()->route('admin.solicitudes-vendedor.index')
-                ->with('success', "Solicitud aprobada. El usuario {$user->name} ahora tiene rol de vendedor.");
+            $user = $solicitud->user;
+            if ($user) {
+                $user->estado = 'verificado';
+                $user->save();
+            }
+
+            return redirect()->route('admin.solicitudes.index')
+                ->with('success', "Usuario {$user->name} verificado correctamente.");
         } catch (\Exception $e) {
-            return redirect()->route('admin.solicitudes-vendedor.index')
+            return redirect()->route('admin.solicitudes.index')
                 ->with('error', 'Hubo un error al aprobar la solicitud: ' . $e->getMessage());
         }
+    }
+
+    public function ubicacion()
+    {
+        $user = Auth::user();
+        return view('perfil.ubicacion', compact('user'));
+    }
+
+    public function guardarUbicacion(Request $request)
+    {
+        $request->validate([
+            'latitud'  => 'required|numeric|between:-90,90',
+            'longitud' => 'required|numeric|between:-180,180',
+        ]);
+
+        $user = Auth::user();
+        $user->latitud  = $request->latitud;
+        $user->longitud = $request->longitud;
+        $user->save();
+
+        return redirect()->route('perfil.ubicacion')
+            ->with('success', 'Ubicación de tu predio guardada correctamente.');
     }
 
     /**
@@ -166,7 +171,7 @@ class SolicitudVendedorController extends Controller
 
             // Validar que no esté ya aprobada o rechazada
             if ($solicitud->estado !== 'pendiente') {
-                return redirect()->route('admin.solicitudes-vendedor.index')
+                return redirect()->route('admin.solicitudes.index')
                     ->with('error', 'Esta solicitud ya ha sido procesada.');
             }
 
@@ -176,10 +181,10 @@ class SolicitudVendedorController extends Controller
             $solicitud->save();
 
             $userName = $solicitud->user ? $solicitud->user->name : 'Usuario';
-            return redirect()->route('admin.solicitudes-vendedor.index')
+            return redirect()->route('admin.solicitudes.index')
                 ->with('success', "Solicitud de {$userName} rechazada correctamente.");
         } catch (\Exception $e) {
-            return redirect()->route('admin.solicitudes-vendedor.index')
+            return redirect()->route('admin.solicitudes.index')
                 ->with('error', 'Hubo un error al rechazar la solicitud: ' . $e->getMessage());
         }
     }
