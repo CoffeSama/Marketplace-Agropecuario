@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\SolicitudVendedorController;
+use App\Http\Controllers\ProductoController;
 
 Route::redirect('/', '/login');
 
@@ -35,6 +36,12 @@ Route::middleware('auth')->group(function () {
     // Perfil y ubicación GPS del productor
     Route::get('/perfil/ubicacion', [SolicitudVendedorController::class, 'ubicacion'])->name('perfil.ubicacion');
     Route::post('/perfil/ubicacion', [SolicitudVendedorController::class, 'guardarUbicacion'])->name('perfil.ubicacion.guardar');
+
+    // US05 - Publicación de cosecha
+    Route::get('/marketplace', [ProductoController::class, 'marketplace'])->name('productos.marketplace');
+    Route::get('/mis-productos', [ProductoController::class, 'index'])->name('productos.index');
+    Route::get('/mis-productos/agregar', [ProductoController::class, 'create'])->name('productos.create');
+    Route::post('/mis-productos', [ProductoController::class, 'store'])->name('productos.store');
 });
 
 // PENDIENTE DE VERIFICACIÓN - subir documentos

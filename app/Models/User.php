@@ -109,4 +109,8 @@ class User extends Authenticatable
     {
         return $this->solicitudesVendedor()->where('estado', 'pendiente')->first();
     }
+    public function productos()
+    {
+        return $this->hasMany(Producto::class);
+    }
 }
