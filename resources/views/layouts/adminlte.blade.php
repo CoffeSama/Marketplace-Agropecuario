@@ -71,6 +71,8 @@
                                     <i class="nav-icon fas fa-home"></i>
                                     <p>Inicio</p>
                                 </a>
+                            </li>
+
                             <li class="nav-item">
                                 <a href="{{ route('productos.marketplace') }}"
                                     class="nav-link {{ request()->routeIs('productos.marketplace') ? 'active' : '' }}">
@@ -78,7 +80,16 @@
                                     <p>Marketplace</p>
                                 </a>
                             </li>
-                            </li>
+
+                            @if (auth()->user()->isComprador())
+                                <li class="nav-item">
+                                    <a href="{{ route('mis-preventas') }}"
+                                        class="nav-link {{ request()->routeIs('mis-preventas') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-shopping-cart"></i>
+                                        <p>Mis preventas</p>
+                                    </a>
+                                </li>
+                            @endif
 
                             @if (auth()->user()->isProductor())
                                 <li class="nav-header">MI PREDIDO</li>
@@ -87,6 +98,14 @@
                                         class="nav-link {{ request()->routeIs('productos.*') && !request()->routeIs('productos.marketplace') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-seedling"></i>
                                         <p>Mis productos</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a href="{{ route('ventas-futuras') }}"
+                                        class="nav-link {{ request()->routeIs('ventas-futuras') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-calendar-alt"></i>
+                                        <p>Ventas futuras</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">

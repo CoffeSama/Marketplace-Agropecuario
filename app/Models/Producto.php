@@ -14,7 +14,13 @@ class Producto extends Model
         'cantidad_disponible',
         'unidad_medida',
         'descripcion',
+        'fecha_disponibilidad',
+        'estado_disponibilidad',
         'estado',
+    ];
+
+    protected $casts = [
+        'fecha_disponibilidad' => 'date',
     ];
 
     public function productor()
@@ -25,5 +31,10 @@ class Producto extends Model
     public function imagenes()
     {
         return $this->hasMany(ProductoImagen::class);
+    }
+
+    public function preventas()
+    {
+        return $this->hasMany(Preventa::class);
     }
 }

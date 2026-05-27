@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Producto;
 use App\Models\ProductoImagen;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,9 +31,8 @@ class ProductoController extends Controller
 
     public function create()
     {
-        $user = Auth::user();
-
         /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         if (!$user->isProductor()) {
             return redirect()->route('home')
@@ -49,9 +49,8 @@ class ProductoController extends Controller
 
     public function store(Request $request)
     {
-        $user = Auth::user();
-
         /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         if (!$user->isProductor()) {
             return redirect()->route('home')
@@ -70,6 +69,7 @@ class ProductoController extends Controller
             'cantidad_disponible' => ['required', 'numeric', 'min:0.01'],
             'unidad_medida' => ['required', 'in:kg,arroba,quintal,unidad,caja,saco,tonelada,libra'],
             'descripcion' => ['required', 'string', 'min:20', 'max:1000'],
+            'fecha_disponibilidad' => ['required', 'date', 'after_or_equal:today'],
             'imagenes' => ['required', 'array', 'min:1', 'max:5'],
             'imagenes.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ], [
@@ -83,6 +83,8 @@ class ProductoController extends Controller
             'unidad_medida.in' => 'Selecciona una unidad de medida válida.',
             'descripcion.required' => 'La descripción es obligatoria.',
             'descripcion.min' => 'La descripción debe tener al menos 20 caracteres.',
+            'fecha_disponibilidad.required' => 'La fecha de disponibilidad es obligatoria.',
+            'fecha_disponibilidad.after_or_equal' => 'La fecha de disponibilidad no puede ser anterior a hoy.',
             'imagenes.required' => 'Debes subir al menos una imagen.',
             'imagenes.min' => 'Debes subir al menos una imagen.',
             'imagenes.*.image' => 'El archivo debe ser una imagen.',
@@ -91,6 +93,10 @@ class ProductoController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $validated, $user) {
+            $estadoDisponibilidad = Carbon::parse($validated['fecha_disponibilidad'])->isFuture()
+                ? 'preventa'
+                : 'disponible';
+
             $producto = Producto::create([
                 'user_id' => $user->id,
                 'nombre' => $validated['nombre'],
@@ -99,6 +105,8 @@ class ProductoController extends Controller
                 'cantidad_disponible' => $validated['cantidad_disponible'],
                 'unidad_medida' => $validated['unidad_medida'],
                 'descripcion' => $validated['descripcion'],
+                'fecha_disponibilidad' => $validated['fecha_disponibilidad'],
+                'estado_disponibilidad' => $estadoDisponibilidad,
                 'estado' => 'publicado',
             ]);
 
