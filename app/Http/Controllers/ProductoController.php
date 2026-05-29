@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProductoController extends Controller
 {
@@ -124,11 +125,81 @@ class ProductoController extends Controller
             ->with('success', 'Producto publicado correctamente en el marketplace.');
     }
 
+    public function edit(Producto $producto)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($producto->user_id !== $user->id) {
+            return redirect()->route('productos.index')
+                ->with('error', 'No tienes permiso para editar este producto.');
+        }
+
+        return view('productos.edit', compact('producto'));
+    }
+
+    public function update(Request $request, Producto $producto)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($producto->user_id !== $user->id) {
+            return redirect()->route('productos.index')
+                ->with('error', 'No tienes permiso para editar este producto.');
+        }
+
+        $validated = $request->validate([
+            'nombre'              => ['required', 'string', 'max:120'],
+            'categoria'           => ['required', 'string', 'max:80'],
+            'precio'              => ['required', 'numeric', 'min:0.01'],
+            'cantidad_disponible' => ['required', 'numeric', 'min:0.01'],
+            'unidad_medida'       => ['required', 'in:kg,arroba,quintal,unidad,caja,saco,tonelada,libra'],
+            'descripcion'         => ['required', 'string', 'min:20', 'max:1000'],
+            'fecha_disponibilidad'=> ['required', 'date'],
+            'imagenes'            => ['nullable', 'array', 'max:5'],
+            'imagenes.*'          => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        DB::transaction(function () use ($request, $validated, $producto) {
+            $estadoDisponibilidad = Carbon::parse($validated['fecha_disponibilidad'])->isFuture()
+                ? 'preventa'
+                : 'disponible';
+
+            $producto->update([
+                'nombre'               => $validated['nombre'],
+                'categoria'            => $validated['categoria'],
+                'precio'               => $validated['precio'],
+                'cantidad_disponible'  => $validated['cantidad_disponible'],
+                'unidad_medida'        => $validated['unidad_medida'],
+                'descripcion'          => $validated['descripcion'],
+                'fecha_disponibilidad' => $validated['fecha_disponibilidad'],
+                'estado_disponibilidad'=> $estadoDisponibilidad,
+            ]);
+
+            if ($request->hasFile('imagenes')) {
+                foreach ($producto->imagenes as $img) {
+                    Storage::disk('public')->delete($img->ruta);
+                    $img->delete();
+                }
+                foreach ($request->file('imagenes') as $imagen) {
+                    ProductoImagen::create([
+                        'producto_id' => $producto->id,
+                        'ruta'        => $imagen->store('productos', 'public'),
+                    ]);
+                }
+            }
+        });
+
+        return redirect()->route('productos.index')
+            ->with('success', 'Producto actualizado correctamente.');
+    }
+
     public function marketplace(Request $request)
     {
-        $lat   = $request->filled('lat')   ? (float) $request->lat   : null;
-        $lng   = $request->filled('lng')   ? (float) $request->lng   : null;
-        $radio = $request->filled('radio') ? (int)   $request->radio : null;
+        $lat       = $request->filled('lat')       ? (float)  $request->lat       : null;
+        $lng       = $request->filled('lng')       ? (float)  $request->lng       : null;
+        $radio     = $request->filled('radio')     ? (int)    $request->radio     : null;
+        $categoria = $request->filled('categoria') ? $request->categoria          : null;
 
         $filtroActivo = $lat !== null && $lng !== null && $radio !== null;
 
@@ -137,8 +208,14 @@ class ProductoController extends Controller
             + sin(radians(?)) * sin(radians(productores.latitud))
         ))";
 
-        $query = Producto::with(['imagenes', 'productor'])
+        $categorias = ['Verdura', 'Fruta', 'Tubérculo', 'Cereal', 'Legumbre', 'Granos', 'Otro'];
+
+        $query = Producto::with(['imagenes', 'productor', 'productor.productor'])
             ->where('productos.estado', 'publicado');
+
+        if ($categoria) {
+            $query->where('productos.categoria', $categoria);
+        }
 
         if ($filtroActivo) {
             $query->join('productores', 'productores.user_id', '=', 'productos.user_id')
@@ -154,6 +231,6 @@ class ProductoController extends Controller
 
         $productos = $query->paginate(12)->withQueryString();
 
-        return view('productos.marketplace', compact('productos', 'filtroActivo', 'radio'));
+        return view('productos.marketplace', compact('productos', 'filtroActivo', 'radio', 'categoria', 'categorias'));
     }
 }

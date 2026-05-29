@@ -43,6 +43,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/mis-productos', [ProductoController::class, 'index'])->name('productos.index');
     Route::get('/mis-productos/agregar', [ProductoController::class, 'create'])->name('productos.create');
     Route::post('/mis-productos', [ProductoController::class, 'store'])->name('productos.store');
+    Route::get('/mis-productos/{producto}/editar', [ProductoController::class, 'edit'])->name('productos.edit');
+    Route::put('/mis-productos/{producto}', [ProductoController::class, 'update'])->name('productos.update');
     
     // US06 - Preventa de cosecha
     Route::post('/preventas/{producto}', [PreventaController::class, 'store'])->name('preventas.store');

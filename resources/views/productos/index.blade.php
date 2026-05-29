@@ -38,9 +38,15 @@
                                 </p>
                                 <p>{{ $producto->descripcion }}</p>
 
-                                <span class="badge badge-success">
-                                    {{ ucfirst($producto->estado) }}
+                                <span class="badge {{ $producto->estado_disponibilidad === 'preventa' ? 'badge-warning' : 'badge-success' }}">
+                                    {{ $producto->estado_disponibilidad === 'preventa' ? 'Preventa' : 'Disponible' }}
                                 </span>
+                            </div>
+                            <div class="card-footer bg-white border-top-0 pt-0">
+                                <a href="{{ route('productos.edit', $producto) }}"
+                                   class="btn btn-sm btn-outline-primary btn-block">
+                                    <i class="fas fa-edit mr-1"></i> Editar
+                                </a>
                             </div>
                         </div>
                     </div>
