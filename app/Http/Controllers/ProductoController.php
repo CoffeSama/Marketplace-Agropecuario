@@ -124,13 +124,36 @@ class ProductoController extends Controller
             ->with('success', 'Producto publicado correctamente en el marketplace.');
     }
 
-    public function marketplace()
+    public function marketplace(Request $request)
     {
-        $productos = Producto::with(['imagenes', 'productor'])
-            ->where('estado', 'publicado')
-            ->latest()
-            ->paginate(12);
+        $lat   = $request->filled('lat')   ? (float) $request->lat   : null;
+        $lng   = $request->filled('lng')   ? (float) $request->lng   : null;
+        $radio = $request->filled('radio') ? (int)   $request->radio : null;
 
-        return view('productos.marketplace', compact('productos'));
+        $filtroActivo = $lat !== null && $lng !== null && $radio !== null;
+
+        $haversine = "6371 * acos(LEAST(1.0,
+            cos(radians(?)) * cos(radians(productores.latitud)) * cos(radians(productores.longitud) - radians(?))
+            + sin(radians(?)) * sin(radians(productores.latitud))
+        ))";
+
+        $query = Producto::with(['imagenes', 'productor'])
+            ->where('productos.estado', 'publicado');
+
+        if ($filtroActivo) {
+            $query->join('productores', 'productores.user_id', '=', 'productos.user_id')
+                  ->whereNotNull('productores.latitud')
+                  ->whereNotNull('productores.longitud')
+                  ->selectRaw("productos.*, $haversine as distancia", [$lat, $lng, $lat])
+                  ->whereRaw("$haversine <= ?", [$lat, $lng, $lat, $radio])
+                  ->orderBy('distancia');
+        } else {
+            $query->select('productos.*')
+                  ->latest('productos.created_at');
+        }
+
+        $productos = $query->paginate(12)->withQueryString();
+
+        return view('productos.marketplace', compact('productos', 'filtroActivo', 'radio'));
     }
 }
