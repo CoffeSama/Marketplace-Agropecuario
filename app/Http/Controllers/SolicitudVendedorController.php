@@ -153,9 +153,13 @@ class SolicitudVendedorController extends Controller
         ]);
 
         $user = Auth::user();
-        $user->latitud  = $request->latitud;
-        $user->longitud = $request->longitud;
-        $user->save();
+        $productor = $user->productor;
+
+        if ($productor) {
+            $productor->latitud  = $request->latitud;
+            $productor->longitud = $request->longitud;
+            $productor->save();
+        }
 
         return redirect()->route('perfil.ubicacion')
             ->with('success', 'Ubicación de tu predio guardada correctamente.');

@@ -17,24 +17,7 @@ class User extends Authenticatable
         'role_id',
         'telefono',
         'estado',
-        // Productor
-        'tipo_productor',
-        'nombre_finca',
-        'ubicacion_administrativa',
-        'años_experiencia',
-        'documento_identidad',
-        'latitud',
-        'longitud',
-        // Comprador
-        'tipo_comprador',
-        'zona_compra',
-        // Transportista
-        'tipo_transporte',
-        'capacidad_carga',
-        'zona_operacion',
-        'licencia_conducir',
-        'placa_vehiculo',
-        'archivo_documento',
+        'terminos_aceptados',
     ];
 
     protected $hidden = [
@@ -58,6 +41,21 @@ class User extends Authenticatable
     public function solicitudesVendedor()
     {
         return $this->hasMany(SolicitudVendedor::class);
+    }
+
+    public function productor()
+    {
+        return $this->hasOne(Productor::class);
+    }
+
+    public function comprador()
+    {
+        return $this->hasOne(Comprador::class);
+    }
+
+    public function transportista()
+    {
+        return $this->hasOne(Transportista::class);
     }
 
     public function getRoleNameAttribute()
