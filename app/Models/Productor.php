@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Productor extends Model
 {
+    protected $table = 'productores';
+
     protected $fillable = [
         'user_id',
         'tipo_productor',
