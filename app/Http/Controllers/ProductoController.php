@@ -155,7 +155,7 @@ class ProductoController extends Controller
             'cantidad_disponible' => ['required', 'numeric', 'min:0.01'],
             'unidad_medida'       => ['required', 'in:kg,arroba,quintal,unidad,caja,saco,tonelada,libra'],
             'descripcion'         => ['required', 'string', 'min:20', 'max:1000'],
-            'fecha_disponibilidad'=> ['required', 'date'],
+            'fecha_disponibilidad' => ['required', 'date'],
             'imagenes'            => ['nullable', 'array', 'max:5'],
             'imagenes.*'          => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
@@ -173,7 +173,7 @@ class ProductoController extends Controller
                 'unidad_medida'        => $validated['unidad_medida'],
                 'descripcion'          => $validated['descripcion'],
                 'fecha_disponibilidad' => $validated['fecha_disponibilidad'],
-                'estado_disponibilidad'=> $estadoDisponibilidad,
+                'estado_disponibilidad' => $estadoDisponibilidad,
             ]);
 
             if ($request->hasFile('imagenes')) {
@@ -196,17 +196,28 @@ class ProductoController extends Controller
 
     public function marketplace(Request $request)
     {
-        $lat       = $request->filled('lat')       ? (float)  $request->lat       : null;
-        $lng       = $request->filled('lng')       ? (float)  $request->lng       : null;
-        $radio     = $request->filled('radio')     ? (int)    $request->radio     : null;
-        $categoria = $request->filled('categoria') ? $request->categoria          : null;
+        // Actualizar automáticamente productos en preventa cuya fecha ya llegó
+        Producto::where('estado_disponibilidad', 'preventa')
+            ->whereNotNull('fecha_disponibilidad')
+            ->whereDate('fecha_disponibilidad', '<=', now()->toDateString())
+            ->update([
+                'estado_disponibilidad' => 'disponible',
+                'updated_at' => now(),
+            ]);
+
+        $lat       = $request->filled('lat')       ? (float) $request->lat       : null;
+        $lng       = $request->filled('lng')       ? (float) $request->lng       : null;
+        $radio     = $request->filled('radio')     ? (int) $request->radio       : null;
+        $categoria = $request->filled('categoria') ? $request->categoria         : null;
+
+        $filtroActivo = $lat !== null && $lng !== null && $radio !== null;
 
         $filtroActivo = $lat !== null && $lng !== null && $radio !== null;
 
         $haversine = "6371 * acos(LEAST(1.0,
-            cos(radians(?)) * cos(radians(productores.latitud)) * cos(radians(productores.longitud) - radians(?))
-            + sin(radians(?)) * sin(radians(productores.latitud))
-        ))";
+        cos(radians(?)) * cos(radians(productores.latitud)) * cos(radians(productores.longitud) - radians(?))
+        + sin(radians(?)) * sin(radians(productores.latitud))
+    ))";
 
         $categorias = ['Verdura', 'Fruta', 'Tubérculo', 'Cereal', 'Legumbre', 'Granos', 'Otro'];
 
@@ -219,14 +230,14 @@ class ProductoController extends Controller
 
         if ($filtroActivo) {
             $query->join('productores', 'productores.user_id', '=', 'productos.user_id')
-                  ->whereNotNull('productores.latitud')
-                  ->whereNotNull('productores.longitud')
-                  ->selectRaw("productos.*, $haversine as distancia", [$lat, $lng, $lat])
-                  ->whereRaw("$haversine <= ?", [$lat, $lng, $lat, $radio])
-                  ->orderBy('distancia');
+                ->whereNotNull('productores.latitud')
+                ->whereNotNull('productores.longitud')
+                ->selectRaw("productos.*, $haversine as distancia", [$lat, $lng, $lat])
+                ->whereRaw("$haversine <= ?", [$lat, $lng, $lat, $radio])
+                ->orderBy('distancia');
         } else {
             $query->select('productos.*')
-                  ->latest('productos.created_at');
+                ->latest('productos.created_at');
         }
 
         $productos = $query->paginate(12)->withQueryString();

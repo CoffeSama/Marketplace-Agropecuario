@@ -83,13 +83,22 @@
 
                             @if (auth()->user()->isComprador())
                                 <li class="nav-item">
+                                    <a href="{{ route('carrito.index') }}"
+                                        class="nav-link {{ request()->routeIs('carrito.*') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-shopping-cart"></i>
+                                        <p>Carrito</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
                                     <a href="{{ route('mis-preventas') }}"
                                         class="nav-link {{ request()->routeIs('mis-preventas') ? 'active' : '' }}">
-                                        <i class="nav-icon fas fa-shopping-cart"></i>
+                                        <i class="nav-icon fas fa-calendar-check"></i>
                                         <p>Mis preventas</p>
                                     </a>
                                 </li>
                             @endif
+
 
                             @if (auth()->user()->isProductor())
                                 <li class="nav-header">MI PREDIDO</li>

@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\SolicitudVendedorController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\PreventaController;
+use App\Http\Controllers\CarritoController;
 
 Route::redirect('/', '/login');
 
@@ -51,6 +52,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/mis-preventas', [PreventaController::class, 'misPreventas'])->name('mis-preventas');
     Route::get('/ventas-futuras', [PreventaController::class, 'ventasFuturas'])->name('ventas-futuras');
     Route::post('/preventas/{preventa}/completar-pago', [PreventaController::class, 'completarPago'])->name('preventas.completar-pago');
+
+    // US10 - Carrito de Compras
+    Route::get('/carrito', [CarritoController::class, 'index'])->name('carrito.index');
+    Route::post('/carrito/agregar/{producto}', [CarritoController::class, 'agregar'])->name('carrito.agregar');
+    Route::patch('/carrito/actualizar/{producto}', [CarritoController::class, 'actualizar'])->name('carrito.actualizar');
+    Route::delete('/carrito/eliminar/{producto}', [CarritoController::class, 'eliminar'])->name('carrito.eliminar');
+    Route::delete('/carrito/vaciar', [CarritoController::class, 'vaciar'])->name('carrito.vaciar');
 });
 
 // PENDIENTE DE VERIFICACIÓN - subir documentos

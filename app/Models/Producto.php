@@ -37,4 +37,8 @@ class Producto extends Model
     {
         return $this->hasMany(Preventa::class);
     }
+    public function carritoItems()
+    {
+        return $this->hasMany(\App\Models\CarritoItem::class);
+    }
 }
