@@ -68,12 +68,9 @@
                             <i class="fas fa-clock mr-1"></i> Esperando respuesta del productor
                         </span>
                     @elseif($pedido->estado === 'aceptado')
-                        <form action="{{ route('pedidos.pagar', $pedido) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-credit-card mr-1"></i> Proceder al pago
-                            </button>
-                        </form>
+                        <a href="{{ route('pedidos.pagar', $pedido) }}" class="btn btn-primary">
+                            <i class="fas fa-qrcode mr-1"></i> Pagar con QR
+                        </a>
                     @elseif($pedido->estado === 'rechazado')
                         <span class="text-danger small">
                             <i class="fas fa-times-circle mr-1"></i> El productor rechazó este pedido

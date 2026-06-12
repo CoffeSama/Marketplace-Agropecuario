@@ -52,7 +52,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/preventas/{producto}', [PreventaController::class, 'store'])->name('preventas.store');
     Route::get('/mis-preventas', [PreventaController::class, 'misPreventas'])->name('mis-preventas');
     Route::get('/ventas-futuras', [PreventaController::class, 'ventasFuturas'])->name('ventas-futuras');
-    Route::post('/preventas/{preventa}/completar-pago', [PreventaController::class, 'completarPago'])->name('preventas.completar-pago');
+    Route::get('/preventas/{preventa}/pagar-anticipo', [PreventaController::class, 'mostrarPagoAnticipo'])->name('preventas.pagar-anticipo');
+    Route::post('/preventas/{preventa}/pagar-anticipo', [PreventaController::class, 'confirmarPagoAnticipo'])->name('preventas.pagar-anticipo.confirmar');
+    Route::get('/preventas/{preventa}/pagar-saldo', [PreventaController::class, 'mostrarPagoSaldo'])->name('preventas.pagar-saldo');
+    Route::post('/preventas/{preventa}/pagar-saldo', [PreventaController::class, 'confirmarPagoSaldo'])->name('preventas.pagar-saldo.confirmar');
 
     // US10 - Carrito de Compras
     Route::get('/carrito', [CarritoController::class, 'index'])->name('carrito.index');
@@ -67,7 +70,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/pedidos-recibidos', [PedidoController::class, 'recibidos'])->name('pedidos.recibidos');
     Route::post('/pedidos/{pedido}/aceptar', [PedidoController::class, 'aceptar'])->name('pedidos.aceptar');
     Route::post('/pedidos/{pedido}/rechazar', [PedidoController::class, 'rechazar'])->name('pedidos.rechazar');
-    Route::post('/pedidos/{pedido}/pagar', [PedidoController::class, 'pagar'])->name('pedidos.pagar');
+    Route::get('/pedidos/{pedido}/pagar', [PedidoController::class, 'mostrarPagoQr'])->name('pedidos.pagar');
+    Route::post('/pedidos/{pedido}/pagar', [PedidoController::class, 'confirmarPagoQr'])->name('pedidos.pagar.confirmar');
 });
 
 // PENDIENTE DE VERIFICACIÓN - subir documentos

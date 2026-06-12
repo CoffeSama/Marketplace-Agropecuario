@@ -3,7 +3,10 @@
 @section('page_title', 'Bienvenido')
 
 @section('content')
-@php $user = auth()->user(); @endphp
+@php
+    $user = auth()->user();
+    $productor = $user->isProductor() ? $user->productor : null;
+@endphp
 
 @if($user->estaPendiente())
     <div class="alert alert-warning">
@@ -27,16 +30,16 @@
                     <i class="fas fa-map-marker-alt fa-3x text-success mb-3"></i>
                     <h5>Ubicación de tu Predio</h5>
                     <p class="text-muted">
-                        @if($user->latitud && $user->longitud)
+                        @if($productor && $productor->latitud && $productor->longitud)
                             <span class="text-success"><i class="fas fa-check-circle"></i> Ubicación registrada</span><br>
-                            <small>{{ $user->latitud }}, {{ $user->longitud }}</small>
+                            <small>{{ $productor->latitud }}, {{ $productor->longitud }}</small>
                         @else
                             Aún no has registrado la ubicación de tu finca.
                         @endif
                     </p>
                     <a href="{{ route('perfil.ubicacion') }}" class="btn btn-success">
                         <i class="fas fa-map mr-1"></i>
-                        {{ $user->latitud ? 'Actualizar ubicación' : 'Registrar ubicación' }}
+                        {{ $productor && $productor->latitud ? 'Actualizar ubicación' : 'Registrar ubicación' }}
                     </a>
                 </div>
             </div>
@@ -47,10 +50,10 @@
                     <h5><i class="fas fa-id-card mr-2"></i> Mi perfil de Productor</h5>
                     <table class="table table-sm mb-0">
                         <tr><th>Nombre:</th><td>{{ $user->name }}</td></tr>
-                        <tr><th>Finca:</th><td>{{ $user->nombre_finca ?? '—' }}</td></tr>
-                        <tr><th>Tipo:</th><td>{{ $user->tipo_productor ?? '—' }}</td></tr>
-                        <tr><th>Ubicación:</th><td>{{ $user->ubicacion_administrativa ?? '—' }}</td></tr>
-                        <tr><th>Experiencia:</th><td>{{ $user->años_experiencia ? $user->años_experiencia . ' años' : '—' }}</td></tr>
+                        <tr><th>Finca:</th><td>{{ $productor->nombre_finca ?? '—' }}</td></tr>
+                        <tr><th>Tipo:</th><td>{{ $productor->tipo_productor ?? '—' }}</td></tr>
+                        <tr><th>Ubicación:</th><td>{{ $productor->ubicacion_administrativa ?? '—' }}</td></tr>
+                        <tr><th>Experiencia:</th><td>{{ $productor && $productor->años_experiencia ? $productor->años_experiencia . ' años' : '—' }}</td></tr>
                         <tr><th>Estado:</th>
                             <td>
                                 @if($user->estaVerificado())

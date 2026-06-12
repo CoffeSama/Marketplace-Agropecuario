@@ -12,13 +12,17 @@ class Preventa extends Model
         'cantidad',
         'total',
         'anticipo',
+        'anticipo_pagado',
         'saldo',
+        'saldo_pagado',
         'estado',
         'fecha_disponibilidad',
     ];
 
     protected $casts = [
         'fecha_disponibilidad' => 'date',
+        'anticipo_pagado' => 'boolean',
+        'saldo_pagado' => 'boolean',
     ];
 
     public function producto()

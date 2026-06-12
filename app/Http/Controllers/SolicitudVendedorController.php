@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SolicitudVendedor;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Productor;
 use App\Http\Requests\StoreSolicitudVendedorRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -142,7 +143,15 @@ class SolicitudVendedorController extends Controller
     public function ubicacion()
     {
         $user = Auth::user();
-        return view('perfil.ubicacion', compact('user'));
+
+        if (!$user->isProductor()) {
+            return redirect()->route('home')
+                ->with('error', 'Solo los productores pueden registrar la ubicación de su predio.');
+        }
+
+        $productor = $this->obtenerOCrearPerfilProductor($user);
+
+        return view('perfil.ubicacion', compact('user', 'productor'));
     }
 
     public function guardarUbicacion(Request $request)
@@ -153,16 +162,38 @@ class SolicitudVendedorController extends Controller
         ]);
 
         $user = Auth::user();
-        $productor = $user->productor;
 
-        if ($productor) {
-            $productor->latitud  = $request->latitud;
-            $productor->longitud = $request->longitud;
-            $productor->save();
+        if (!$user->isProductor()) {
+            return redirect()->route('home')
+                ->with('error', 'Solo los productores pueden registrar la ubicación de su predio.');
         }
+
+        $productor = $this->obtenerOCrearPerfilProductor($user);
+
+        $productor->update([
+            'latitud' => $request->latitud,
+            'longitud' => $request->longitud,
+        ]);
 
         return redirect()->route('perfil.ubicacion')
             ->with('success', 'Ubicación de tu predio guardada correctamente.');
+    }
+
+    private function obtenerOCrearPerfilProductor(User $user): Productor
+    {
+        if ($user->productor) {
+            return $user->productor;
+        }
+
+        return Productor::create([
+            'user_id' => $user->id,
+            'tipo_productor' => $user->getAttribute('tipo_productor') ?: 'Productor agropecuario',
+            'nombre_finca' => $user->getAttribute('nombre_finca') ?: 'Finca de ' . $user->name,
+            'ubicacion_administrativa' => $user->getAttribute('ubicacion_administrativa') ?: 'Por registrar',
+            'años_experiencia' => $user->getAttribute('años_experiencia') ?: 0,
+            'documento_identidad' => $user->getAttribute('documento_identidad') ?: 'SIN-DOC-' . $user->id,
+            'archivo_documento' => $user->getAttribute('archivo_documento'),
+        ]);
     }
 
     /**

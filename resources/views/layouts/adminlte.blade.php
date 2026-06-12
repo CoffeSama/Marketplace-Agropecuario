@@ -92,7 +92,7 @@
 
                                 <li class="nav-item">
                                     <a href="{{ route('pedidos.mis-pedidos') }}"
-                                        class="nav-link {{ request()->routeIs('pedidos.mis-pedidos') ? 'active' : '' }}">
+                                        class="nav-link {{ request()->routeIs('pedidos.mis-pedidos', 'pedidos.pagar') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-receipt"></i>
                                         <p>Mis pedidos</p>
                                     </a>

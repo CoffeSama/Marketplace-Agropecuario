@@ -7,6 +7,7 @@
 
 @php
     $pendientes = $pedidos->where('estado', 'pendiente');
+    $pagados = $pedidos->where('estado', 'pagado');
 @endphp
 
 @if($pendientes->isNotEmpty())
@@ -14,6 +15,14 @@
         <i class="fas fa-bell mr-2"></i>
         Tienes <strong>{{ $pendientes->count() }}</strong>
         {{ $pendientes->count() === 1 ? 'pedido pendiente' : 'pedidos pendientes' }} de confirmación.
+    </div>
+@endif
+
+@if($pagados->isNotEmpty())
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle mr-2"></i>
+        Tienes <strong>{{ $pagados->count() }}</strong>
+        {{ $pagados->count() === 1 ? 'pedido pagado' : 'pedidos pagados' }} por compradores.
     </div>
 @endif
 
@@ -26,7 +35,7 @@
     </div>
 @else
     @foreach($pedidos as $pedido)
-        <div class="card mb-3 {{ $pedido->estado === 'pendiente' ? 'card-outline card-warning' : '' }}">
+        <div class="card mb-3 {{ $pedido->estado === 'pendiente' ? 'card-outline card-warning' : ($pedido->estado === 'pagado' ? 'card-outline card-success' : '') }}">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="card-title mb-0">
                     Pedido #{{ $pedido->id }}

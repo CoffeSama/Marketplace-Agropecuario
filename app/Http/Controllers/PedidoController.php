@@ -134,19 +134,37 @@ class PedidoController extends Controller
         return back()->with('success', "Pedido #{$pedido->id} rechazado.");
     }
 
-    public function pagar(Pedido $pedido)
+    public function mostrarPagoQr(Pedido $pedido)
     {
         if ($pedido->comprador_id !== Auth::id()) {
             return back()->with('error', 'No tienes permiso sobre este pedido.');
         }
 
         if ($pedido->estado !== 'aceptado') {
-            return back()->with('error', 'Solo puedes pagar pedidos aceptados por el productor.');
+            return redirect()->route('pedidos.mis-pedidos')
+                ->with('error', 'Solo puedes pagar con QR los pedidos aceptados por el productor.');
         }
 
-        // Pago simulado (MVP)
+        $pedido->load(['productor', 'items']);
+        $qrPayload = "AGROVIDA|PEDIDO:{$pedido->id}|TOTAL:{$pedido->total}|PRODUCTOR:{$pedido->productor_id}";
+
+        return view('pedidos.pago-qr', compact('pedido', 'qrPayload'));
+    }
+
+    public function confirmarPagoQr(Pedido $pedido)
+    {
+        if ($pedido->comprador_id !== Auth::id()) {
+            return back()->with('error', 'No tienes permiso sobre este pedido.');
+        }
+
+        if ($pedido->estado !== 'aceptado') {
+            return redirect()->route('pedidos.mis-pedidos')
+                ->with('error', 'Solo puedes pagar con QR los pedidos aceptados por el productor.');
+        }
+
         $pedido->update(['estado' => 'pagado']);
 
-        return back()->with('success', "Pago del pedido #{$pedido->id} registrado correctamente (simulado).");
+        return redirect()->route('pedidos.mis-pedidos')
+            ->with('success', "Pago QR simulado del pedido #{$pedido->id} registrado exitosamente.");
     }
 }

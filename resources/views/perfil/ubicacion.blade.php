@@ -38,13 +38,13 @@
                     <div class="form-group">
                         <label>Latitud</label>
                         <input type="text" id="latitud" name="latitud" class="form-control @error('latitud') is-invalid @enderror"
-                               value="{{ old('latitud', $user->latitud) }}" readonly placeholder="Haz clic en el mapa">
+                               value="{{ old('latitud', $productor->latitud) }}" readonly placeholder="Haz clic en el mapa">
                         @error('latitud')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="form-group">
                         <label>Longitud</label>
                         <input type="text" id="longitud" name="longitud" class="form-control @error('longitud') is-invalid @enderror"
-                               value="{{ old('longitud', $user->longitud) }}" readonly placeholder="Haz clic en el mapa">
+                               value="{{ old('longitud', $productor->longitud) }}" readonly placeholder="Haz clic en el mapa">
                         @error('longitud')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="form-group">
@@ -55,16 +55,16 @@
                     <button type="button" class="btn btn-outline-info btn-block mb-2" onclick="usarMiUbicacion()">
                         <i class="fas fa-location-arrow mr-1"></i> Usar mi ubicación actual
                     </button>
-                    <button type="submit" class="btn btn-success btn-block" id="btnGuardar" {{ !$user->latitud ? 'disabled' : '' }}>
+                    <button type="submit" class="btn btn-success btn-block" id="btnGuardar" {{ !$productor->latitud ? 'disabled' : '' }}>
                         <i class="fas fa-save mr-1"></i> Guardar ubicación
                     </button>
                 </form>
 
-                @if($user->latitud && $user->longitud)
+                @if($productor->latitud && $productor->longitud)
                     <hr>
                     <div class="alert alert-success py-2 mb-0">
                         <i class="fas fa-check-circle mr-1"></i> Ubicación registrada<br>
-                        <small>{{ $user->latitud }}, {{ $user->longitud }}</small>
+                        <small>{{ $productor->latitud }}, {{ $productor->longitud }}</small>
                     </div>
                 @endif
             </div>
@@ -87,9 +87,9 @@
 @push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const latInicial  = {{ $user->latitud  ?? -17.7833 }};
-    const lngInicial  = {{ $user->longitud ?? -63.1821 }};
-    const tieneUbicacion = {{ $user->latitud ? 'true' : 'false' }};
+    const latInicial  = {{ old('latitud', $productor->latitud) ?? -17.7833 }};
+    const lngInicial  = {{ old('longitud', $productor->longitud) ?? -63.1821 }};
+    const tieneUbicacion = {{ old('latitud', $productor->latitud) ? 'true' : 'false' }};
 
     const map = L.map('map').setView([latInicial, lngInicial], tieneUbicacion ? 14 : 6);
 
