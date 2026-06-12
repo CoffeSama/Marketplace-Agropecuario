@@ -1,0 +1,22 @@
+services:
+  nginx:
+    container_name: agrovida-nginx-2
+    ports:
+      - "8081:80"
+
+  db:
+    container_name: agrovida-db-2
+    ports:
+      - "55433:5432"
+
+  laravel:
+    container_name: agrovida-laravel-2
+    networks:
+      agrovida-net:
+        aliases:
+          - agrovida-laravel
+
+networks:
+  agrovida-net:
+    external: true
+    name: equipo07_agrovida-net
