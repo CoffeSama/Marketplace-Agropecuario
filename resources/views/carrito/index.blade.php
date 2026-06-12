@@ -125,9 +125,12 @@
                         </button>
                     </form>
 
-                    <a href="#" class="btn btn-success">
-                        Confirmar pedido
-                    </a>
+                    <form action="{{ route('pedidos.confirmar') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check mr-1"></i> Confirmar pedido
+                        </button>
+                    </form>
                 </div>
             </div>
 

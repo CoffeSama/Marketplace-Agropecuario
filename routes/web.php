@@ -8,6 +8,7 @@ use App\Http\Controllers\SolicitudVendedorController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\PreventaController;
 use App\Http\Controllers\CarritoController;
+use App\Http\Controllers\PedidoController;
 
 Route::redirect('/', '/login');
 
@@ -59,6 +60,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('/carrito/actualizar/{producto}', [CarritoController::class, 'actualizar'])->name('carrito.actualizar');
     Route::delete('/carrito/eliminar/{producto}', [CarritoController::class, 'eliminar'])->name('carrito.eliminar');
     Route::delete('/carrito/vaciar', [CarritoController::class, 'vaciar'])->name('carrito.vaciar');
+
+    // US11 - Confirmación de pedido y validación del productor
+    Route::post('/pedidos/confirmar', [PedidoController::class, 'confirmar'])->name('pedidos.confirmar');
+    Route::get('/mis-pedidos', [PedidoController::class, 'misPedidos'])->name('pedidos.mis-pedidos');
+    Route::get('/pedidos-recibidos', [PedidoController::class, 'recibidos'])->name('pedidos.recibidos');
+    Route::post('/pedidos/{pedido}/aceptar', [PedidoController::class, 'aceptar'])->name('pedidos.aceptar');
+    Route::post('/pedidos/{pedido}/rechazar', [PedidoController::class, 'rechazar'])->name('pedidos.rechazar');
+    Route::post('/pedidos/{pedido}/pagar', [PedidoController::class, 'pagar'])->name('pedidos.pagar');
 });
 
 // PENDIENTE DE VERIFICACIÓN - subir documentos

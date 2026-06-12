@@ -91,6 +91,14 @@
                                 </li>
 
                                 <li class="nav-item">
+                                    <a href="{{ route('pedidos.mis-pedidos') }}"
+                                        class="nav-link {{ request()->routeIs('pedidos.mis-pedidos') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-receipt"></i>
+                                        <p>Mis pedidos</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
                                     <a href="{{ route('mis-preventas') }}"
                                         class="nav-link {{ request()->routeIs('mis-preventas') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-calendar-check"></i>
@@ -107,6 +115,24 @@
                                         class="nav-link {{ request()->routeIs('productos.*') && !request()->routeIs('productos.marketplace') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-seedling"></i>
                                         <p>Mis productos</p>
+                                    </a>
+                                </li>
+
+                                @php
+                                    $pedidosPendientes = \App\Models\Pedido::where('productor_id', auth()->id())
+                                        ->where('estado', 'pendiente')
+                                        ->count();
+                                @endphp
+                                <li class="nav-item">
+                                    <a href="{{ route('pedidos.recibidos') }}"
+                                        class="nav-link {{ request()->routeIs('pedidos.recibidos') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-inbox"></i>
+                                        <p>
+                                            Pedidos recibidos
+                                            @if ($pedidosPendientes > 0)
+                                                <span class="badge badge-warning right">{{ $pedidosPendientes }}</span>
+                                            @endif
+                                        </p>
                                     </a>
                                 </li>
 
@@ -189,6 +215,25 @@
             </section>
             <section class="content">
                 <div class="container-fluid">
+                    @auth
+                        @if (auth()->user()->isProductor() && !request()->routeIs('pedidos.recibidos'))
+                            @php
+                                $pedidosNuevos = \App\Models\Pedido::where('productor_id', auth()->id())
+                                    ->where('visto_productor', false)
+                                    ->where('estado', 'pendiente')
+                                    ->count();
+                            @endphp
+                            @if ($pedidosNuevos > 0)
+                                <div class="alert alert-warning alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                    <i class="fas fa-bell mr-1"></i>
+                                    Tienes <strong>{{ $pedidosNuevos }}</strong>
+                                    {{ $pedidosNuevos === 1 ? 'pedido nuevo pendiente' : 'pedidos nuevos pendientes' }} de confirmación.
+                                    <a href="{{ route('pedidos.recibidos') }}" class="alert-link">Ver pedidos recibidos</a>
+                                </div>
+                            @endif
+                        @endif
+                    @endauth
                     @if (session('success'))
                         <div class="alert alert-success alert-dismissible">
                             <button type="button" class="close" data-dismiss="alert">&times;</button>
